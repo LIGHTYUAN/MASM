@@ -1,0 +1,70 @@
+# MASM
+MASM
+      .586
+DATA  SEGMENT USE16
+BUF   DB    '15110323'
+LENS  EQU   $-BUF
+DATA  ENDS
+CODE  SEGMENT USE16
+      ASSUME CS:CODE, DS:DATA
+BEG:  MOV   AX,DATA
+      MOV   DS,AX
+      CALL  I8250
+      LEA   BX,BUF
+      MOV   CX,LENS
+
+
+
+SCAN0:
+      MOV   DX,3FDH
+      IN    AL,DX
+      TEST  AL,20H
+      JZ    SCAN0
+
+      MOV   DX,3F8H
+      MOV   AL,[BX]
+      OUT   DX,AL
+      INC   BX
+
+
+SCAN1:
+      MOV   DX,3FDH
+      IN    AL,DX
+      TEST  AL,01H
+      JZ    SCAN1
+      
+      MOV   DX,3F8H
+      IN    AL,DX
+      AND   AL,01111111B
+      
+      MOV   DL,AL
+      MOV   AH,02H
+      INT   21H
+
+      LOOP  SCAN0
+      MOV   AH,4CH
+      INT   21H
+I8250 PROC
+      MOV   DX,3FBH
+      MOV   AL,80
+      OUT   DX,AL
+      MOV   DX,3F9H
+      MOV   AL,0
+      OUT   DX,AL
+      MOV   DX,3F8H
+      MOV   AL,30H
+      OUT   DX,AL
+      MOV   DX,3FBH     ;7BIT
+      MOV   AL,0AH
+      OUT   DX,AL
+      MOV   DX,3F9H
+      MOV   AL,0
+      OUT   DX,AL
+      MOV   DX,3FCH
+      MOV   AL,10H
+      OUT   DX,AL
+
+      RET
+I8250 ENDP
+CODE  ENDS
+      END   BEG
